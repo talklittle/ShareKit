@@ -22,7 +22,6 @@
 
 #import "NSDictionary+Recursive.h"
 #import "SharersCommonHeaders.h"
-#import "SHKOAuthView.h"
 
 #define kSHKImgurUserInfo @"kSHKImgurUserInfo"
 
@@ -30,6 +29,7 @@
 @property (copy, nonatomic) NSString *accessTokenString;
 @property (copy, nonatomic) NSString *accessTokenType;
 @property (copy, nonatomic) NSDate *accessTokenExpirationDate;
+@property (copy, nonatomic) NSString *authorizationCode;
 @end
 
 @implementation SHKImgur
@@ -81,7 +81,7 @@
 	{
 		self.consumerKey = SHKCONFIG(imgurClientID);
 		self.secretKey = SHKCONFIG(imgurClientSecret);
- 		self.authorizeCallbackURL = [NSURL URLWithString:SHKCONFIG(imgurCallbackUrl)];
+ 		self.authorizeCallbackURL = [NSURL URLWithString:SHKCONFIG(imgurCallbackURL)];
 		
 		// -- //
 		
@@ -100,28 +100,27 @@
 
 - (void)tokenAuthorize
 {
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?response_type=token&client_id=%@", [self.authorizeURL absoluteString], self.consumerKey]];
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?response_type=code&client_id=%@", [self.authorizeURL absoluteString], self.consumerKey]];
 	
 	SHKOAuthView *auth = [[SHKOAuthView alloc] initWithURL:url delegate:self];
 	[[SHK currentHelper] showViewController:auth];
 }
 
+- (void)tokenAuthorizeView:(SHKOAuthView *)authView didFinishWithSuccess:(BOOL)success queryParams:(NSMutableDictionary *)queryParams error:(NSError *)error {
+    self.authorizationCode = queryParams[@"code"];
+}
+
+- (void)tokenAuthorizeCancelledView:(SHKOAuthView *)authView {
+}
+
 - (void)tokenAccessModifyRequest:(OAMutableURLRequest *)oRequest
 {
-    NSDictionary *formValues = [self.pendingForm formValues];
-
-//    [oRequest parameters];
+    OARequestParameter *clientId = [[OARequestParameter alloc] initWithName:@"client_id" value:SHKCONFIG(imgurClientID)];
+    OARequestParameter *clientSecret = [[OARequestParameter alloc] initWithName:@"client_secret" value:SHKCONFIG(imgurClientSecret)];
+    OARequestParameter *grantType = [[OARequestParameter alloc] initWithName:@"grant_type" value:@"authorization_code"];
+    OARequestParameter *code = [[OARequestParameter alloc] initWithName:@"code" value:self.authorizationCode];
     
-    OARequestParameter *username = [[OARequestParameter alloc] initWithName:@"x_auth_username"
-                                                                      value:[formValues objectForKey:@"username"]];
-    
-    OARequestParameter *password = [[OARequestParameter alloc] initWithName:@"x_auth_password"
-                                                                      value:[formValues objectForKey:@"password"]];
-    
-    OARequestParameter *mode = [[OARequestParameter alloc] initWithName:@"x_auth_mode"
-                                                                  value:@"client_auth"];
-    
-    [oRequest setParameters:[NSArray arrayWithObjects:username, password, mode, nil]];
+    [oRequest setParameters:[NSArray arrayWithObjects:clientId, clientSecret, grantType, code, nil]];
 }
 
 - (void)tokenAccessTicket:(OAServiceTicket *)ticket didFinishWithData:(NSData *)data

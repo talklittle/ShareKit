@@ -306,6 +306,10 @@
     return @"cd4b907f1de7c7a901f055d5d2cd27415e43f7f3";
 }
 
+- (NSString *)imgurCallbackURL {
+    return @"https://imgur.com";
+}
+
 /*
  UI Configuration : Basic
  ------------------------

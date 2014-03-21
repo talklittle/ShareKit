@@ -21,7 +21,8 @@
 #import <Foundation/Foundation.h>
 #import "SHK.h"
 #import "SHKOAuthSharer.h"
+#import "SHKOAuthView.h"
 
-@interface SHKImgur : SHKOAuthSharer
+@interface SHKImgur : SHKOAuthSharer<SHKOAuthViewDelegate>
 
 @end

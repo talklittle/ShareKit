@@ -116,6 +116,7 @@
 //SHKImgur
 - (NSString *)imgurClientID;
 - (NSString *)imgurClientSecret;
+- (NSString *)imgurCallbackURL;
 
 #pragma mark - default values for sharer specific extension SHKItem properties
 //SHKPrint

@@ -387,7 +387,8 @@ on the auth path. It will try to use native auth if availible.
 
 // Imgur
 /*
- Set up an app at https://api.imgur.com/oauth2/addclient
+ 1. Set up an app at https://api.imgur.com/oauth2/addclient
+ 2. 'Callback URL' should match whatever you enter in SHKImgurCallbackURL.  The callback url doesn't have to be an actual existing url.  The user will never get to it because ShareKit intercepts it before the user is redirected.  It just needs to match.
  */
 
 - (NSString *)imgurClientID {
@@ -395,6 +396,10 @@ on the auth path. It will try to use native auth if availible.
 }
 
 - (NSString *)imgurClientSecret {
+    return @"";
+}
+
+- (NSString *)imgurCallbackURL {
     return @"";
 }
 
