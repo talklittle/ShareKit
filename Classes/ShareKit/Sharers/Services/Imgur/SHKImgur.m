@@ -79,8 +79,8 @@
     
 	if (self)
 	{
-		self.consumerKey = SHKCONFIG(imgurConsumerKey);
-		self.secretKey = SHKCONFIG(imgurSecret);
+		self.consumerKey = SHKCONFIG(imgurClientID);
+		self.secretKey = SHKCONFIG(imgurClientSecret);
  		self.authorizeCallbackURL = [NSURL URLWithString:SHKCONFIG(imgurCallbackUrl)];
 		
 		// -- //

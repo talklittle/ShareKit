@@ -390,11 +390,11 @@ on the auth path. It will try to use native auth if availible.
  Set up an app at https://api.imgur.com/oauth2/addclient
  */
 
-- (NSString *)imgurConsumerKey {
+- (NSString *)imgurClientID {
     return @"";
 }
 
-- (NSString *)imgurSecret {
+- (NSString *)imgurClientSecret {
     return @"";
 }
 

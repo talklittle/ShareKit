@@ -114,8 +114,8 @@
 //SHKBuffer
 - (NSNumber *)bufferShouldShortenURLS;
 //SHKImgur
-- (NSString *)imgurConsumerKey;
-- (NSString *)imgurSecret;
+- (NSString *)imgurClientID;
+- (NSString *)imgurClientSecret;
 
 #pragma mark - default values for sharer specific extension SHKItem properties
 //SHKPrint
