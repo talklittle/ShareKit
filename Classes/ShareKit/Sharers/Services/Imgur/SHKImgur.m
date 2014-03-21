@@ -295,14 +295,15 @@
     
     // For more information on OAMutableURLRequest see http://code.google.com/p/oauthconsumer/wiki/UsingOAuthConsumer
     OAMutableURLRequest *oRequest = [[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://api.example.com/share"]
-                                                                    consumer:consumer // this is a consumer object already made available to us
-                                                                       token:accessToken // this is our accessToken already made available to us
+                                                                    consumer:self.consumer // this is a consumer object already made available to us
+                                                                       token:self.accessToken // this is our accessToken already made available to us
                                                                        realm:nil
-                                                           signatureProvider:signatureProvider];
+                                                           signatureProvider:self.signatureProvider];
     
     // Set the http method (POST or GET)
     [oRequest setHTTPMethod:@"POST"];
     
+    SHKItem *item = self.item;
     
     // Determine which type of share to do
     switch (item.shareType) {
@@ -315,15 +316,17 @@
             // Add the params to the request
             [oRequest setParameters:[NSArray arrayWithObjects:titleParam, urlParam, nil]];
         }
-        case SHKShareTypeFile
+        case SHKShareTypeFile:
         {
-            if (self.item.URLContentType == SHKShareContentImage) {
+            if (self.item.URLContentType == SHKURLContentTypeImage) {
                 
                 // Create our parameters
                 OARequestParameter *typeParam = [[OARequestParameter alloc] initWithName:@"type" value:@"photo"];
                 OARequestParameter *captionParam = [[OARequestParameter alloc] initWithName:@"caption" value:item.title];
                 
                 //Setup the request...
+                
+                NSMutableArray *params = [NSMutableArray array];
                 [params addObjectsFromArray:@[typeParam, captionParam]];
                 
                 /* bellow lines might help you upload binary data */
@@ -332,7 +335,7 @@
                 [oRequest prepare];
                 
                 //create multipart
-                [oRequest attachFileWithParameterName:@"data" filename:self.item.filename contentType:self.item.mimeType data:self.item.data];
+                [oRequest attachFileWithParameterName:@"data" filename:item.file.filename contentType:item.file.mimeType data:item.file.data];
             }
         }
         default:
