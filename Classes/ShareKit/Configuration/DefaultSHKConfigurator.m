@@ -385,6 +385,19 @@ on the auth path. It will try to use native auth if availible.
     return [NSNumber numberWithBool:YES];
 }
 
+// Imgur
+/*
+ Set up an app at https://api.imgur.com/oauth2/addclient
+ */
+
+- (NSString *)imgurConsumerKey {
+    return @"";
+}
+
+- (NSString *)imgurSecret {
+    return @"";
+}
+
 /*
  UI Configuration : Basic
  ------------------------

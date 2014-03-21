@@ -10,6 +10,8 @@
 		456BADAB169107D1005B3077 /* SHKGooglePlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 456BADA9169107D1005B3077 /* SHKGooglePlus.h */; };
 		456BADAC169107D1005B3077 /* SHKGooglePlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 456BADAA169107D1005B3077 /* SHKGooglePlus.m */; };
 		456BADAD1691095B005B3077 /* libGoogle Plus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4503EBC0169104470057294C /* libGoogle Plus.a */; };
+		4932D60018DB695E0075FEE8 /* SHKImgur.h in Headers */ = {isa = PBXBuildFile; fileRef = 4932D5FE18DB695E0075FEE8 /* SHKImgur.h */; };
+		4932D60118DB695E0075FEE8 /* SHKImgur.m in Sources */ = {isa = PBXBuildFile; fileRef = 4932D5FF18DB695E0075FEE8 /* SHKImgur.m */; };
 		7A04074618313A5F00691F2B /* SHKFacebookCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A04074418313A5F00691F2B /* SHKFacebookCommon.h */; };
 		7A04074718313A5F00691F2B /* SHKFacebookCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A04074518313A5F00691F2B /* SHKFacebookCommon.m */; };
 		7A0F91D9156BA2A0009CB40A /* SHK.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A536A711DBE3B9004A1712 /* SHK.m */; };
@@ -744,6 +746,8 @@
 		4503EBC0169104470057294C /* libGoogle Plus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libGoogle Plus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		456BADA9169107D1005B3077 /* SHKGooglePlus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SHKGooglePlus.h; path = "Google Plus/SHKGooglePlus.h"; sourceTree = "<group>"; };
 		456BADAA169107D1005B3077 /* SHKGooglePlus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SHKGooglePlus.m; path = "Google Plus/SHKGooglePlus.m"; sourceTree = "<group>"; };
+		4932D5FE18DB695E0075FEE8 /* SHKImgur.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SHKImgur.h; path = Imgur/SHKImgur.h; sourceTree = "<group>"; };
+		4932D5FF18DB695E0075FEE8 /* SHKImgur.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SHKImgur.m; path = Imgur/SHKImgur.m; sourceTree = "<group>"; };
 		7A04074418313A5F00691F2B /* SHKFacebookCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SHKFacebookCommon.h; sourceTree = "<group>"; };
 		7A04074518313A5F00691F2B /* SHKFacebookCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SHKFacebookCommon.m; sourceTree = "<group>"; };
 		7A0F91CD156B9FF2009CB40A /* SHKDelicious.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SHKDelicious.h; path = Delicious/SHKDelicious.h; sourceTree = "<group>"; };
@@ -1942,6 +1946,7 @@
 				C042A61D1430AB4D00DF9AF6 /* FoursquareV2 */,
 				7AECF32D171D51EB000722FA /* Google OAuth Services */,
 				7A203CFE16EB775400421995 /* Hatena */,
+				4932D5FD18DB5FCE0075FEE8 /* Imgur */,
 				7A16F3AC16134A5D0019645D /* Instagram */,
 				43150A8A11E78697008C6B68 /* Instapaper */,
 				1A52EDF315CB032B00A737D8 /* Kippt */,
@@ -2057,6 +2062,15 @@
 				456BADAA169107D1005B3077 /* SHKGooglePlus.m */,
 			);
 			name = "Google Plus";
+			sourceTree = "<group>";
+		};
+		4932D5FD18DB5FCE0075FEE8 /* Imgur */ = {
+			isa = PBXGroup;
+			children = (
+				4932D5FE18DB695E0075FEE8 /* SHKImgur.h */,
+				4932D5FF18DB695E0075FEE8 /* SHKImgur.m */,
+			);
+			name = Imgur;
 			sourceTree = "<group>";
 		};
 		7A0F91CB156B9FCE009CB40A /* Delicious */ = {
@@ -2718,6 +2732,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4932D60018DB695E0075FEE8 /* SHKImgur.h in Headers */,
 				7AE8DC7C165B549B004D99D2 /* DummyLibFile.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4030,6 +4045,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7AE8DC7D165B549B004D99D2 /* DummyLibFile.m in Sources */,
+				4932D60118DB695E0075FEE8 /* SHKImgur.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

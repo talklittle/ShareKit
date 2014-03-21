@@ -113,6 +113,9 @@
 -(NSNumber *)dropboxShouldOverwriteExistedFile;
 //SHKBuffer
 - (NSNumber *)bufferShouldShortenURLS;
+//SHKImgur
+- (NSString *)imgurConsumerKey;
+- (NSString *)imgurSecret;
 
 #pragma mark - default values for sharer specific extension SHKItem properties
 //SHKPrint
