@@ -14,6 +14,7 @@
 		4932D60118DB695E0075FEE8 /* SHKImgur.m in Sources */ = {isa = PBXBuildFile; fileRef = 4932D5FF18DB695E0075FEE8 /* SHKImgur.m */; };
 		4932D60F18DCBE080075FEE8 /* SHKImgur.m in Sources */ = {isa = PBXBuildFile; fileRef = 4932D5FF18DB695E0075FEE8 /* SHKImgur.m */; };
 		4932D61018DCBE200075FEE8 /* SHKImgur.h in Headers */ = {isa = PBXBuildFile; fileRef = 4932D5FE18DB695E0075FEE8 /* SHKImgur.h */; };
+		4932D61118DCC1FD0075FEE8 /* libImgur.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4932D60E18DCBD840075FEE8 /* libImgur.a */; };
 		7A04074618313A5F00691F2B /* SHKFacebookCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A04074418313A5F00691F2B /* SHKFacebookCommon.h */; };
 		7A04074718313A5F00691F2B /* SHKFacebookCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A04074518313A5F00691F2B /* SHKFacebookCommon.m */; };
 		7A0F91D9156BA2A0009CB40A /* SHK.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A536A711DBE3B9004A1712 /* SHK.m */; };
@@ -1250,6 +1251,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4932D61118DCC1FD0075FEE8 /* libImgur.a in Frameworks */,
 				7ADB644518C5C0FA00B5AF7F /* libPKMultipartInputStream.a in Frameworks */,
 				7AA2E9F91743E5B200B17434 /* libPocket SDK.a in Frameworks */,
 				7AA2E9FA1743E5B200B17434 /* libPocket.a in Frameworks */,
