@@ -10,11 +10,9 @@
 		456BADAB169107D1005B3077 /* SHKGooglePlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 456BADA9169107D1005B3077 /* SHKGooglePlus.h */; };
 		456BADAC169107D1005B3077 /* SHKGooglePlus.m in Sources */ = {isa = PBXBuildFile; fileRef = 456BADAA169107D1005B3077 /* SHKGooglePlus.m */; };
 		456BADAD1691095B005B3077 /* libGoogle Plus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4503EBC0169104470057294C /* libGoogle Plus.a */; };
-		4932D60018DB695E0075FEE8 /* SHKImgur.h in Headers */ = {isa = PBXBuildFile; fileRef = 4932D5FE18DB695E0075FEE8 /* SHKImgur.h */; };
-		4932D60118DB695E0075FEE8 /* SHKImgur.m in Sources */ = {isa = PBXBuildFile; fileRef = 4932D5FF18DB695E0075FEE8 /* SHKImgur.m */; };
 		4932D60F18DCBE080075FEE8 /* SHKImgur.m in Sources */ = {isa = PBXBuildFile; fileRef = 4932D5FF18DB695E0075FEE8 /* SHKImgur.m */; };
 		4932D61018DCBE200075FEE8 /* SHKImgur.h in Headers */ = {isa = PBXBuildFile; fileRef = 4932D5FE18DB695E0075FEE8 /* SHKImgur.h */; };
-		4932D61118DCC1FD0075FEE8 /* libImgur.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4932D60E18DCBD840075FEE8 /* libImgur.a */; };
+		4979F30E18DCE9B7000F1733 /* libImgur.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4932D60E18DCBD840075FEE8 /* libImgur.a */; };
 		7A04074618313A5F00691F2B /* SHKFacebookCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A04074418313A5F00691F2B /* SHKFacebookCommon.h */; };
 		7A04074718313A5F00691F2B /* SHKFacebookCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A04074518313A5F00691F2B /* SHKFacebookCommon.m */; };
 		7A0F91D9156BA2A0009CB40A /* SHK.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A536A711DBE3B9004A1712 /* SHK.m */; };
@@ -333,6 +331,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4503EBB8169104470057294C;
 			remoteInfo = "Google Plus";
+		};
+		4979F30C18DCE75B000F1733 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4932D60318DCBD840075FEE8;
+			remoteInfo = Imgur;
 		};
 		7A203D0D16EB7F5100421995 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1251,7 +1256,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4932D61118DCC1FD0075FEE8 /* libImgur.a in Frameworks */,
+				4979F30E18DCE9B7000F1733 /* libImgur.a in Frameworks */,
 				7ADB644518C5C0FA00B5AF7F /* libPKMultipartInputStream.a in Frameworks */,
 				7AA2E9F91743E5B200B17434 /* libPocket SDK.a in Frameworks */,
 				7AA2E9FA1743E5B200B17434 /* libPocket.a in Frameworks */,
@@ -2753,7 +2758,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4932D60018DB695E0075FEE8 /* SHKImgur.h in Headers */,
 				7AE8DC7C165B549B004D99D2 /* DummyLibFile.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3256,6 +3260,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4979F30D18DCE75B000F1733 /* PBXTargetDependency */,
 				7ADB644018C5BFF000B5AF7F /* PBXTargetDependency */,
 				7A4E4667173E2C5300CCEE80 /* PBXTargetDependency */,
 				7A4E4665173E2C4F00CCEE80 /* PBXTargetDependency */,
@@ -4092,7 +4097,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7AE8DC7D165B549B004D99D2 /* DummyLibFile.m in Sources */,
-				4932D60118DB695E0075FEE8 /* SHKImgur.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4320,6 +4324,11 @@
 			isa = PBXTargetDependency;
 			target = 4503EBB8169104470057294C /* Google Plus */;
 			targetProxy = 456BADAE16910966005B3077 /* PBXContainerItemProxy */;
+		};
+		4979F30D18DCE75B000F1733 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4932D60318DCBD840075FEE8 /* Imgur */;
+			targetProxy = 4979F30C18DCE75B000F1733 /* PBXContainerItemProxy */;
 		};
 		7A203D0E16EB7F5100421995 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
