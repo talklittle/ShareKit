@@ -13,6 +13,8 @@
 		4932D60F18DCBE080075FEE8 /* SHKImgur.m in Sources */ = {isa = PBXBuildFile; fileRef = 4932D5FF18DB695E0075FEE8 /* SHKImgur.m */; };
 		4932D61018DCBE200075FEE8 /* SHKImgur.h in Headers */ = {isa = PBXBuildFile; fileRef = 4932D5FE18DB695E0075FEE8 /* SHKImgur.h */; };
 		4979F30E18DCE9B7000F1733 /* libImgur.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4932D60E18DCBD840075FEE8 /* libImgur.a */; };
+		4979F31918DD0EA4000F1733 /* SHKImgurOAuthView.h in Headers */ = {isa = PBXBuildFile; fileRef = 4979F31718DD0EA4000F1733 /* SHKImgurOAuthView.h */; };
+		4979F31A18DD0EA4000F1733 /* SHKImgurOAuthView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4979F31818DD0EA4000F1733 /* SHKImgurOAuthView.m */; };
 		7A04074618313A5F00691F2B /* SHKFacebookCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A04074418313A5F00691F2B /* SHKFacebookCommon.h */; };
 		7A04074718313A5F00691F2B /* SHKFacebookCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A04074518313A5F00691F2B /* SHKFacebookCommon.m */; };
 		7A0F91D9156BA2A0009CB40A /* SHK.m in Sources */ = {isa = PBXBuildFile; fileRef = 43A536A711DBE3B9004A1712 /* SHK.m */; };
@@ -757,6 +759,8 @@
 		4932D5FE18DB695E0075FEE8 /* SHKImgur.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SHKImgur.h; path = Imgur/SHKImgur.h; sourceTree = "<group>"; };
 		4932D5FF18DB695E0075FEE8 /* SHKImgur.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SHKImgur.m; path = Imgur/SHKImgur.m; sourceTree = "<group>"; };
 		4932D60E18DCBD840075FEE8 /* libImgur.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libImgur.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		4979F31718DD0EA4000F1733 /* SHKImgurOAuthView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SHKImgurOAuthView.h; path = Imgur/SHKImgurOAuthView.h; sourceTree = "<group>"; };
+		4979F31818DD0EA4000F1733 /* SHKImgurOAuthView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SHKImgurOAuthView.m; path = Imgur/SHKImgurOAuthView.m; sourceTree = "<group>"; };
 		7A04074418313A5F00691F2B /* SHKFacebookCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SHKFacebookCommon.h; sourceTree = "<group>"; };
 		7A04074518313A5F00691F2B /* SHKFacebookCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SHKFacebookCommon.m; sourceTree = "<group>"; };
 		7A0F91CD156B9FF2009CB40A /* SHKDelicious.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SHKDelicious.h; path = Delicious/SHKDelicious.h; sourceTree = "<group>"; };
@@ -2087,6 +2091,8 @@
 			children = (
 				4932D5FE18DB695E0075FEE8 /* SHKImgur.h */,
 				4932D5FF18DB695E0075FEE8 /* SHKImgur.m */,
+				4979F31718DD0EA4000F1733 /* SHKImgurOAuthView.h */,
+				4979F31818DD0EA4000F1733 /* SHKImgurOAuthView.m */,
 			);
 			name = Imgur;
 			sourceTree = "<group>";
@@ -2621,6 +2627,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4932D61018DCBE200075FEE8 /* SHKImgur.h in Headers */,
+				4979F31918DD0EA4000F1733 /* SHKImgurOAuthView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3886,6 +3893,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4979F31A18DD0EA4000F1733 /* SHKImgurOAuthView.m in Sources */,
 				4932D60F18DCBE080075FEE8 /* SHKImgur.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

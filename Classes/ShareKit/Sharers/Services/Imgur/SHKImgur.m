@@ -22,6 +22,7 @@
 
 #import "NSDictionary+Recursive.h"
 #import "SharersCommonHeaders.h"
+#import "SHKImgurOAuthView.h"
 
 #define kSHKImgurUserInfo @"kSHKImgurUserInfo"
 
@@ -102,7 +103,7 @@
 {
 	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?response_type=code&client_id=%@", [self.authorizeURL absoluteString], self.consumerKey]];
 	
-	SHKOAuthView *auth = [[SHKOAuthView alloc] initWithURL:url delegate:self];
+	SHKImgurOAuthView *auth = [[SHKImgurOAuthView alloc] initWithURL:url delegate:self];
 	[[SHK currentHelper] showViewController:auth];
 }
 
