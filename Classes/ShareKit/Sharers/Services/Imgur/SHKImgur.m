@@ -28,6 +28,9 @@
 
 @interface SHKImgur ()
 @property (copy, nonatomic) NSString *accessTokenString;
+@property (copy, nonatomic) NSString *refreshTokenString;
+@property (copy, nonatomic) NSDate *expirationDate;
+
 @property (copy, nonatomic) NSString *accessTokenType;
 @property (copy, nonatomic) NSDate *accessTokenExpirationDate;
 @property (copy, nonatomic) NSString *authorizationCode;
@@ -93,6 +96,10 @@
 	return self;
 }
 
+- (BOOL)isAuthorized {
+    return [self restoreAccessToken];
+}
+
 - (void)tokenRequest {
     // OAuth 2.0 does not have this step.
     // Skip to Token Authorize step.
@@ -101,81 +108,50 @@
 
 - (void)tokenAuthorize
 {
-	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?response_type=code&client_id=%@", [self.authorizeURL absoluteString], self.consumerKey]];
+	NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?response_type=token&client_id=%@", [self.authorizeURL absoluteString], self.consumerKey]];
 	
 	SHKImgurOAuthView *auth = [[SHKImgurOAuthView alloc] initWithURL:url delegate:self];
 	[[SHK currentHelper] showViewController:auth];
 }
 
 - (void)tokenAuthorizeView:(SHKOAuthView *)authView didFinishWithSuccess:(BOOL)success queryParams:(NSMutableDictionary *)queryParams error:(NSError *)error {
-    self.authorizationCode = queryParams[@"code"];
+	[[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
+    if (success) {
+        self.accessTokenString  = [queryParams objectForKey:@"access_token"];
+        self.accessTokenType    = [queryParams objectForKey:@"token_type"];
+        self.refreshTokenString = [queryParams objectForKey:@"refresh_token"];
+        self.expirationDate     = [NSDate dateWithTimeIntervalSinceNow:[[queryParams objectForKey:@"expires_in"] doubleValue]];
+        [self storeAccessToken];
+        [self tryPendingAction];
+        
+    } else {
+        [[[UIAlertView alloc] initWithTitle:SHKLocalizedString(@"Access Error")
+                                    message:error!=nil?[error localizedDescription]:SHKLocalizedString(@"There was an error while sharing")
+                                   delegate:nil
+                          cancelButtonTitle:SHKLocalizedString(@"Close")
+                          otherButtonTitles:nil] show];
+    }
+    [self authDidFinish:success];
 }
 
 - (void)tokenAuthorizeCancelledView:(SHKOAuthView *)authView {
 }
 
-- (void)tokenAccessModifyRequest:(OAMutableURLRequest *)oRequest
+- (void)storeAccessToken
 {
-    OARequestParameter *clientId = [[OARequestParameter alloc] initWithName:@"client_id" value:SHKCONFIG(imgurClientID)];
-    OARequestParameter *clientSecret = [[OARequestParameter alloc] initWithName:@"client_secret" value:SHKCONFIG(imgurClientSecret)];
-    OARequestParameter *grantType = [[OARequestParameter alloc] initWithName:@"grant_type" value:@"authorization_code"];
-    OARequestParameter *code = [[OARequestParameter alloc] initWithName:@"code" value:self.authorizationCode];
-    
-    [oRequest setParameters:[NSArray arrayWithObjects:clientId, clientSecret, grantType, code, nil]];
-}
-
-- (void)tokenAccessTicket:(OAServiceTicket *)ticket didFinishWithData:(NSData *)data
-{
-	if (SHKDebugShowLogs) // check so we don't have to alloc the string with the data if we aren't logging
-		SHKLog(@"tokenAccessTicket Response Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-	
-	[self hideActivityIndicator];
-	
-	if (ticket.didSucceed)
-	{
-		NSString *responseBody = [[NSString alloc] initWithData:data
-													   encoding:NSUTF8StringEncoding];
-        
-		NSString *accessToken;
-        NSString *refreshToken;
-        NSDate *expirationDate;
-        NSArray *pairs = [responseBody componentsSeparatedByString:@"&"];
-		for (NSString *pair in pairs) {
-			NSArray *elements = [pair componentsSeparatedByString:@"="];
-			if ([[elements objectAtIndex:0] isEqualToString:@"access_token"]) {
-				accessToken = [[elements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-			} else if ([[elements objectAtIndex:0] isEqualToString:@"refresh_token"]) {
-				refreshToken = [[elements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-			} else if ([[elements objectAtIndex:0] isEqualToString:@"expires_in"]) {
-				NSString *expiresIn = [[elements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-                expirationDate = [NSDate dateWithTimeIntervalSinceNow:[expiresIn doubleValue]];
-			}
-		}
-
-        [self storeAccessToken:accessToken refreshToken:refreshToken expirationDate:expirationDate];
-		
-		[self tryPendingAction];
-	}
-	
-	
-	else
-		// TODO - better error handling here
-		[self tokenAccessTicket:ticket didFailWithError:[SHK error:SHKLocalizedString(@"There was a problem requesting access from %@", [self sharerTitle])]];
-    
-	[self authDidFinish:ticket.didSucceed];
-}
-
-- (void)storeAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expirationDate:(NSDate *)expirationDate
-{
-	[SHK setAuthValue:accessToken
+	[SHK setAuthValue:self.accessTokenString
                forKey:@"accessToken"
             forSharer:[self sharerId]];
 	
-	[SHK setAuthValue:refreshToken
+	[SHK setAuthValue:self.accessTokenType
+               forKey:@"accessTokenType"
+            forSharer:[self sharerId]];
+	
+	[SHK setAuthValue:self.refreshTokenString
                forKey:@"refreshToken"
 			forSharer:[self sharerId]];
 	
-	[SHK setAuthValue:[@([expirationDate timeIntervalSinceReferenceDate]) stringValue]
+	[SHK setAuthValue:[@([self.expirationDate timeIntervalSinceReferenceDate]) stringValue]
 			   forKey:@"expirationDate"
 			forSharer:[self sharerId]];
 }
@@ -185,23 +161,35 @@
 	NSString *sharerId = [self sharerId];
 	
 	[SHK removeAuthValueForKey:@"accessToken" forSharer:sharerId];
+	[SHK removeAuthValueForKey:@"accessTokenType" forSharer:sharerId];
 	[SHK removeAuthValueForKey:@"refreshToken" forSharer:sharerId];
 	[SHK removeAuthValueForKey:@"expirationDate" forSharer:sharerId];
 }
 
 
 //if the sharer can get user info (and it should!) override these convenience methods too. Replace example implementation with the one specific for your sharer.
- + (NSString *)username {
- 
- NSDictionary *userInfo = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSHKImgurUserInfo];
- NSString *result = [userInfo findRecursivelyValueForKey:@"_content"];
- return result;
- }
- + (void)logout {
- 
- [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSHKImgurUserInfo];
- [super logout];
- }
++ (NSString *)username {
+    
+    NSDictionary *userInfo = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSHKImgurUserInfo];
+    NSString *result = [userInfo findRecursivelyValueForKey:@"_content"];
+    return result;
+}
+
++ (void)logout {
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSHKImgurUserInfo];
+    [super logout];
+}
+
+- (BOOL)restoreAccessToken {
+    NSString *sharerId = [self sharerId];
+    
+    self.accessTokenString  = [SHK getAuthValueForKey:@"accessToken" forSharer:sharerId];
+    self.accessTokenType    = [SHK getAuthValueForKey:@"accessTokenType" forSharer:sharerId];
+    self.refreshTokenString = [SHK getAuthValueForKey:@"refreshToken" forSharer:sharerId];
+    self.expirationDate     = [NSDate dateWithTimeIntervalSinceReferenceDate:[[SHK getAuthValueForKey:@"expirationDate" forSharer:sharerId] doubleValue]];
+    
+    return self.accessTokenString && ![@"" isEqualToString:self.accessTokenString] && [self.expirationDate compare:[NSDate date]] == NSOrderedDescending;
+}
 
 #pragma mark -
 #pragma mark Share Form
