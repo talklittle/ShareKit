@@ -178,6 +178,28 @@
     [defaults setObject:[userInfo copy] forKey:kSHKImgurUserInfo];
 }
 
++ (id)getUserInfo
+{
+    SHKItem *item = [[SHKItem alloc] init];
+    item.shareType = SHKShareTypeUserInfo;
+    
+    if ([self canShareItem:item]) {
+        
+        // Create controller and set share options
+        SHKSharer *controller = [[self alloc] init];
+        controller.item = item;
+        
+        // share and/or show UI
+        [controller share];
+        return controller;
+        
+    } else {
+        
+        SHKLog(@"Warning!!! This sharer does not fetch user info.");
+        return nil;
+    }
+}
+
 + (void)logout {
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kSHKImgurUserInfo];
     [super logout];
@@ -203,8 +225,12 @@
 {
     // See http://getsharekit.com/docs/#forms for documentation on creating forms
     
-    return @[[SHKFormFieldSettings label:@"Title" key:@"title" type:SHKFormFieldTypeText start:self.item.title],
-             [SHKFormFieldSettings label:@"Description" key:@"description" type:SHKFormFieldTypeText start:nil]];
+    if (type == SHKShareTypeImage || type == SHKShareTypeFile) {
+        return @[[SHKFormFieldSettings label:@"Title" key:@"title" type:SHKFormFieldTypeText start:self.item.title],
+                 [SHKFormFieldSettings label:@"Description" key:@"description" type:SHKFormFieldTypeText start:nil]];
+    }
+    
+    return nil;
     
 }
 
@@ -241,6 +267,8 @@
 		return NO;
     
     switch (self.item.shareType) {
+        case SHKShareTypeUserInfo:
+            return YES;
         case SHKShareTypeImage:
         case SHKShareTypeFile:
             [self uploadPhoto];
@@ -257,17 +285,7 @@
 
     NSMutableURLRequest *oRequest;
 
-    BOOL canUseNSURLSession = NSClassFromString(@"NSURLSession") != nil;
-    if (canUseNSURLSession) {
-        oRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.imgur.com/3/upload"]];
-    } else {
-        // FIXME
-        oRequest = [[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.imgur.com/3/upload"]
-                                                   consumer:self.consumer
-                                                      token:self.accessToken
-                                                      realm:nil
-                                          signatureProvider:self.signatureProvider];
-    }
+    oRequest = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.imgur.com/3/upload"]];
     [oRequest setHTTPMethod:@"POST"];
     
     if ([self isAuthorized]) {
@@ -294,6 +312,7 @@
     
     [oRequest attachFile:self.item.file withParameterName:@"image"];
     
+    BOOL canUseNSURLSession = NSClassFromString(@"NSURLSession") != nil;
     if (canUseNSURLSession) {
         
         __weak typeof(self) weakSelf = self;
@@ -315,18 +334,25 @@
         
     } else {
         
-        OAAsynchronousDataFetcher *fetcher = [OAAsynchronousDataFetcher asynchronousFetcherWithRequest:(OAMutableURLRequest *)oRequest
-                                                                                              delegate:self
-                                                                                     didFinishSelector:@selector(uploadPhotoTicket:didFinishWithData:)
-                                                                                       didFailSelector:@selector(sendTicket:didFailWithError:)];
-        [fetcher start];
-        return fetcher;
+        NSURLConnection *connection = [NSURLConnection connectionWithRequest:oRequest delegate:self];
+        [connection start];
+        return nil;
     }
 }
 
-- (void)uploadPhotoTicket:(OAServiceTicket *)ticket didFinishWithData:(NSData *)data {
-    
-    [self uploadPhotoDidFinishWithData:data success:ticket.didSucceed];
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    [self uploadPhotoDidFinishWithData:data success:YES];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+    NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+    if ([httpResponse statusCode] >= 400) {
+        [self uploadPhotoDidFinishWithData:nil success:NO];
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    [self uploadPhotoDidFinishWithData:nil success:NO];
 }
 
 - (void)uploadPhotoDidFinishWithData:(NSData *)data success:(BOOL)success {
@@ -353,59 +379,6 @@
     }
 }
 
-- (void)sendTicket:(OAServiceTicket *)ticket didFinishWithData:(NSData *)data
-{
-	if (ticket.didSucceed)
-	{
-		NSError *error = nil;
-        NSMutableDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
-        
-        if ([response findRecursivelyValueForKey:@"_content"]) {
-            
-            //save userInfo
-            [[NSUserDefaults standardUserDefaults] setObject:response forKey:kSHKImgurUserInfo];
-            [self sendDidFinish];
-            
-        } else if ([response findRecursivelyValueForKey:@"group"]) {
-            
-            [self hideActivityIndicator];
-            
-            //fill in OptionController with user's groups
-            NSArray *groups = [response findRecursivelyValueForKey:@"group"];
-            
-            if ([groups count] > 0) {
-                NSMutableArray *displayGroups = [[NSMutableArray alloc] initWithCapacity:[groups count]];
-                NSMutableArray *saveGroups = [[NSMutableArray alloc] initWithCapacity:[groups count]];
-                for (NSDictionary *group in groups) {
-                    [displayGroups addObject:group[@"name"]];
-                    [saveGroups addObject:group[@"nsid"]];
-                }
-                [self.curOptionController optionsEnumeratedDisplay:displayGroups save:saveGroups];
-            } else {
-                [self.curOptionController optionsEnumerationFailedWithError:nil];
-            }
-        } else if ([response findRecursivelyValueForKey:@"stat"]) {
-            //moved (or not, nevermind) uploaded photo to specified group
-        } else {
-            
-            //error
-//            if ([response[@"code"] integerValue] == [USER_REMOVED_ACCESS_CODE integerValue]) {
-//                [self shouldReloginWithPendingAction:SHKPendingShare];
-//            } else {
-//                [self sendShowSimpleErrorAlert];
-//            }
-            SHKLog(@"flickr got error%@", [response description]);
-        }
-	}
-	
-	else
-	{
-		[self sendShowSimpleErrorAlert];
-        NSError *error __attribute__((unused)) = nil;
-        SHKLog(@"Flickr ticket did not succeed with error:%@",  [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error] description]);
-        
-	}
-}
 - (void)sendTicket:(OAServiceTicket *)ticket didFailWithError:(NSError*)error
 {
 	if (self.curOptionController) {
