@@ -199,40 +199,14 @@
 
 // If your action has options or additional information it needs to get from the user,
 // use this to create the form that is presented to user upon sharing. You can even set validationBlock to validate user's input for any field setting)
-/*
- - (NSArray *)shareFormFieldsForType:(SHKShareType)type
- {
- // See http://getsharekit.com/docs/#forms for documentation on creating forms
- 
- if (type == SHKShareTypeURL)
- {
- // An example form that has a single text field to let the user edit the share item's title
- return [NSArray arrayWithObjects:
- [SHKFormFieldSettings label:@"Title" key:@"title" type:SHKFormFieldTypeText start:item.title],
- nil];
- }
- 
- else if (type == SHKShareTypeImage)
- {
- // return a form if required when sharing an image
- return nil;
- }
- 
- else if (type == SHKShareTypeText)
- {
- // return a form if required when sharing text
- return nil;
- }
- 
- else if (type == SHKShareTypeFile)
- {
- // return a form if required when sharing a file
- return nil;
- }
- 
- return nil;
- }
- */
+- (NSArray *)shareFormFieldsForType:(SHKShareType)type
+{
+    // See http://getsharekit.com/docs/#forms for documentation on creating forms
+    
+    return @[[SHKFormFieldSettings label:@"Title" key:@"title" type:SHKFormFieldTypeText start:self.item.title],
+             [SHKFormFieldSettings label:@"Description" key:@"description" type:SHKFormFieldTypeText start:nil]];
+    
+}
 
 // If you have a share form the user will have the option to skip it in the future.
 // If your form has required information and should never be skipped, uncomment this section.
