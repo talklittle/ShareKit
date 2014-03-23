@@ -45,12 +45,6 @@
 	return SHKLocalizedString(@"Imgur");
 }
 
-
-+ (BOOL)canShareURL
-{
-    return YES;
-}
-
 + (BOOL)canShareImage
 {
     return YES;
