@@ -48,25 +48,26 @@
 }
 
 
- + (BOOL)canShareURL
- {
- return YES;
- }
++ (BOOL)canShareURL
+{
+    return YES;
+}
 
- + (BOOL)canShareImage
- {
- return YES;
- }
++ (BOOL)canShareImage
+{
+    return YES;
+}
 
- + (BOOL)canShareFile:(SHKFile *)file
- {
- return YES;
- }
++ (BOOL)canShareFile:(SHKFile *)file
+{
+    NSString *mimeType = [file mimeType];
+    return [mimeType hasPrefix:@"image/"];
+}
 
- + (BOOL)canGetUserInfo
- {
- return YES;
- }
++ (BOOL)canGetUserInfo
+{
+    return YES;
+}
 
 
 
