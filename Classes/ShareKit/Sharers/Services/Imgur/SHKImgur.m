@@ -23,6 +23,7 @@
 #import "NSDictionary+Recursive.h"
 #import "SharersCommonHeaders.h"
 #import "SHKImgurOAuthView.h"
+#import "SHKSession.h"
 
 #define kSHKImgurUserInfo @"kSHKImgurUserInfo"
 
@@ -122,6 +123,7 @@
         self.accessTokenType    = [queryParams objectForKey:@"token_type"];
         self.refreshTokenString = [queryParams objectForKey:@"refresh_token"];
         self.expirationDate     = [NSDate dateWithTimeIntervalSinceNow:[[queryParams objectForKey:@"expires_in"] doubleValue]];
+        [[self class] setUsername:[queryParams objectForKey:@"account_username"]];
         [self storeAccessToken];
         [self tryPendingAction];
         
@@ -170,10 +172,19 @@
 
 //if the sharer can get user info (and it should!) override these convenience methods too. Replace example implementation with the one specific for your sharer.
 + (NSString *)username {
-    
     NSDictionary *userInfo = [[NSUserDefaults standardUserDefaults] dictionaryForKey:kSHKImgurUserInfo];
-    NSString *result = [userInfo findRecursivelyValueForKey:@"_content"];
+    NSString *result = [userInfo findRecursivelyValueForKey:@"username"];
     return result;
+}
+
++ (void)setUsername:(NSString *)username {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSMutableDictionary *userInfo = [[defaults dictionaryForKey:kSHKImgurUserInfo] mutableCopy];
+    if (!userInfo) {
+        userInfo = [NSMutableDictionary dictionary];
+    }
+    [userInfo setObject:username forKey:@"username"];
+    [defaults setObject:[userInfo copy] forKey:kSHKImgurUserInfo];
 }
 
 + (void)logout {
@@ -259,123 +270,212 @@
  }
  */
 
-// Send the share item to the server
 - (BOOL)send
 {
 	if (![self validateItem])
 		return NO;
-	
-	/*
-	 Enter the necessary logic to share the item here.
-	 
-	 The shared item and relevant data is in self.item
-	 // See http://getsharekit.com/docs/#sending
-	 
-	 --
-	 
-	 A common implementation looks like:
-     
-	 -  Send a request to the server
-	 -  call [self sendDidStart] after you start your action
-	 -  after the action completes, handle the response in didFinishSelector: or didFailSelector: methods.	 */
-	
-	// Here is an example.
-	// This example is for a service that can share a URL
     
-    // For more information on OAMutableURLRequest see http://code.google.com/p/oauthconsumer/wiki/UsingOAuthConsumer
-    OAMutableURLRequest *oRequest = [[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://api.example.com/share"]
-                                                                    consumer:self.consumer // this is a consumer object already made available to us
-                                                                       token:self.accessToken // this is our accessToken already made available to us
-                                                                       realm:nil
-                                                           signatureProvider:self.signatureProvider];
-    
-    // Set the http method (POST or GET)
-    [oRequest setHTTPMethod:@"POST"];
-    
-    SHKItem *item = self.item;
-    
-    // Determine which type of share to do
-    switch (item.shareType) {
-        case SHKShareTypeURL:
-        {
-            // Create our parameters
-            OARequestParameter *urlParam = [[OARequestParameter alloc] initWithName:@"url" value:SHKEncodeURL(item.URL)];
-            OARequestParameter *titleParam = [[OARequestParameter alloc] initWithName:@"title" value:SHKEncode(item.title)];
-            
-            // Add the params to the request
-            [oRequest setParameters:[NSArray arrayWithObjects:titleParam, urlParam, nil]];
-        }
+    switch (self.item.shareType) {
+        case SHKShareTypeUserInfo:
+            self.quiet = YES;
+            [self sendImgurUserInfoRequest];
+            break;
+        case SHKShareTypeImage:
         case SHKShareTypeFile:
-        {
-            if (self.item.URLContentType == SHKURLContentTypeImage) {
-                
-                // Create our parameters
-                OARequestParameter *typeParam = [[OARequestParameter alloc] initWithName:@"type" value:@"photo"];
-                OARequestParameter *captionParam = [[OARequestParameter alloc] initWithName:@"caption" value:item.title];
-                
-                //Setup the request...
-                
-                NSMutableArray *params = [NSMutableArray array];
-                [params addObjectsFromArray:@[typeParam, captionParam]];
-                
-                /* bellow lines might help you upload binary data */
-                
-                //make OAuth signature prior appending the multipart/form-data
-                [oRequest prepare];
-                
-                //create multipart
-                [oRequest attachFileWithParameterName:@"data" filename:item.file.filename contentType:item.file.mimeType data:item.file.data];
-            }
-        }
+            [self uploadPhoto];
+            break;
         default:
-            return NO;
             break;
     }
-    // Start the request
+    
+    [self sendDidStart];
+    return YES;
+}
+
+- (OAAsynchronousDataFetcher *)sendImgurUserInfoRequest {
+    
+    OAMutableURLRequest *oRequest = [[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.imgur.com/oauth2/"]];
+    [oRequest setHTTPMethod:@"POST"];
+    
+    [oRequest setParameters:@[]];
+    
     OAAsynchronousDataFetcher *fetcher = [OAAsynchronousDataFetcher asynchronousFetcherWithRequest:oRequest
                                                                                           delegate:self
                                                                                  didFinishSelector:@selector(sendTicket:didFinishWithData:)
                                                                                    didFailSelector:@selector(sendTicket:didFailWithError:)];
     [fetcher start];
-    
-    // Notify delegate
-    [self sendDidStart];
-    
-    return YES;
+    return fetcher;
 }
 
-/* This is a continuation of the example provided in 'send' above.  These methods handle the OAAsynchronousDataFetcher response and should be implemented - your duty is to check the response and decide, if send finished OK, or what kind of error there is. Depending on the result, you should call one of these methods:
- 
- [self sendDidFinish]; (if successful)
- [self shouldReloginWithPendingAction:SHKPendingSend]; (if credentials saved in app are obsolete - e.g. user might have changed password, or revoked app access - this will prompt for new credentials and silently share after successful login)
- [self shouldReloginWithPendingAction:SHKPendingShare]; (if credentials saved in app are obsolete - e.g. user might have changed password, or revoked app access - this will prompt for new credentials and present share UI dialogue after successful login. This can happen if the service always requires to check credentials prior send request).
- [self sendShowSimpleErrorAlert]; (in case of other error)
- [self sendDidCancel];(in case of user cancelled - you might need this if the service presents its own UI for sharing))
- */
+- (OAAsynchronousDataFetcher *)uploadPhoto {
+    
+    OAMutableURLRequest *oRequest = [[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"http://up.flickr.com/services/upload/"]
+                                                                    consumer:self.consumer
+                                                                       token:self.accessToken
+                                                                       realm:nil
+                                                           signatureProvider:self.signatureProvider];
+    [oRequest setHTTPMethod:@"POST"];
+    
+    NSMutableArray *params = [[NSMutableArray alloc] initWithCapacity:6];
+    if ([self.item.title length] > 0) {
+        [params addObject:[[OARequestParameter alloc] initWithName:@"title" value:self.item.title]];
+    }
+    if ([[self.item customValueForKey:@"description"] length] > 0) {
+        [params addObject:[[OARequestParameter alloc] initWithName:@"description" value:[self.item customValueForKey:@"description"]]];
+    }
+    if ([self.item.tags count] > 0) {
+        NSString *joinedTags = [self tagStringJoinedBy:@" " allowedCharacters:[NSCharacterSet alphanumericCharacterSet] tagPrefix:nil tagSuffix:nil];
+        [params addObject:[[OARequestParameter alloc] initWithName:@"tags" value:joinedTags]];
+    }
+    [params addObject:[[OARequestParameter alloc] initWithName:@"is_public" value:[self.item customValueForKey:@"is_public"]]];
+    [params addObject:[[OARequestParameter alloc] initWithName:@"is_friend" value:[self.item customValueForKey:@"is_friend"]]];
+    [params addObject:[[OARequestParameter alloc] initWithName:@"is_family" value:[self.item customValueForKey:@"is_family"]]];
+    [oRequest setParameters:params];
+    
+    if (self.item.shareType == SHKShareTypeImage) {
+        
+        [self.item convertImageShareToFileShareOfType:SHKImageConversionTypeJPG quality:1];
+    }
+    
+    [oRequest attachFile:self.item.file withParameterName:@"photo"];
+    
+    BOOL canUseNSURLSession = NSClassFromString(@"NSURLSession") != nil;
+    if (canUseNSURLSession) {
+        
+        __weak typeof(self) weakSelf = self;
+        self.networkSession = [SHKSession startSessionWithRequest:oRequest delegate:self completion:^(NSData *data, NSURLResponse *response, NSError *error) {
+            
+            if (error.code == -999) {
+                [weakSelf sendDidCancel];
+            } else if (error) {
+                SHKLog(@"upload photo did fail with error:%@", [error description]);
+                [weakSelf sendTicket:nil didFailWithError:error];
+            } else {
+                BOOL success = [(NSHTTPURLResponse *)response statusCode] < 400;
+                [weakSelf uploadPhotoDidFinishWithData:data success:success];
+            }
+            [[SHK currentHelper] removeSharerReference:weakSelf];
+        }];
+        [[SHK currentHelper] keepSharerReference:self];
+        return nil;
+        
+    } else {
+        
+        OAAsynchronousDataFetcher *fetcher = [OAAsynchronousDataFetcher asynchronousFetcherWithRequest:oRequest
+                                                                                              delegate:self
+                                                                                     didFinishSelector:@selector(uploadPhotoTicket:didFinishWithData:)
+                                                                                       didFailSelector:@selector(sendTicket:didFailWithError:)];
+        [fetcher start];
+        return fetcher;
+    }
+}
+
+- (void)uploadPhotoTicket:(OAServiceTicket *)ticket didFinishWithData:(NSData *)data {
+    
+    [self uploadPhotoDidFinishWithData:data success:ticket.didSucceed];
+}
+
+- (void)uploadPhotoDidFinishWithData:(NSData *)data success:(BOOL)success {
+    
+    if (success) {
+        
+//        NSDictionary *response = [SHKXMLResponseParser dictionaryFromData:data];
+//        NSString* photoID = [response findRecursivelyValueForKey:@"photoid"];
+//        
+//        if (photoID) {
+//            
+//            [self sendDidFinish];
+//            
+//            //now we are going to add uploaded photo to groups. Let's not bother user with indicators...Photo is uploaded anyway.
+//            self.quiet = YES;
+//            NSArray *groupsArray = [[self.item customValueForKey:@"postgroup"] componentsSeparatedByString:@","];
+//            for (NSString *groupNSID in groupsArray) {
+//                
+//                NSArray *parameters = @[[[OARequestParameter alloc] initWithName:@"photo_id" value:photoID],
+//                                        [[OARequestParameter alloc] initWithName:@"group_id" value:groupNSID]];
+//                [self sendFlickrRequestMethod:@"flickr.groups.pools.add" parameters:parameters];
+//            }
+//            
+//        } else {
+//            
+//            NSString *code = [response findRecursivelyValueForKey:@"code"];
+//            if ([code isEqualToString:USER_REMOVED_ACCESS_CODE]) {
+//                [self shouldReloginWithPendingAction:SHKPendingSend];
+//            } else if ([code isEqualToString:USER_EXCEEDED_UPLOAD_LIMIT_CODE]) {
+//                [self sendDidFailWithError:[SHK error:[response findRecursivelyValueForKey:@"msg"]]];
+//            } else {
+//                [self sendShowSimpleErrorAlert];
+//            }
+//            SHKLog(@"Flickr upload ticket failed with error:%@", [[SHKXMLResponseParser dictionaryFromData:data] description]);
+//        }
+        
+    } else {
+        
+        [self sendShowSimpleErrorAlert];
+//        SHKLog(@"Flickr upload ticket failed with error:%@", [[SHKXMLResponseParser dictionaryFromData:data] description]);
+    }
+}
 
 - (void)sendTicket:(OAServiceTicket *)ticket didFinishWithData:(NSData *)data
 {
 	if (ticket.didSucceed)
 	{
-		// The send was successful
-		[self sendDidFinish];
+		NSError *error = nil;
+        NSMutableDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
+        
+        if ([response findRecursivelyValueForKey:@"_content"]) {
+            
+            //save userInfo
+            [[NSUserDefaults standardUserDefaults] setObject:response forKey:kSHKImgurUserInfo];
+            [self sendDidFinish];
+            
+        } else if ([response findRecursivelyValueForKey:@"group"]) {
+            
+            [self hideActivityIndicator];
+            
+            //fill in OptionController with user's groups
+            NSArray *groups = [response findRecursivelyValueForKey:@"group"];
+            
+            if ([groups count] > 0) {
+                NSMutableArray *displayGroups = [[NSMutableArray alloc] initWithCapacity:[groups count]];
+                NSMutableArray *saveGroups = [[NSMutableArray alloc] initWithCapacity:[groups count]];
+                for (NSDictionary *group in groups) {
+                    [displayGroups addObject:group[@"name"]];
+                    [saveGroups addObject:group[@"nsid"]];
+                }
+                [self.curOptionController optionsEnumeratedDisplay:displayGroups save:saveGroups];
+            } else {
+                [self.curOptionController optionsEnumerationFailedWithError:nil];
+            }
+        } else if ([response findRecursivelyValueForKey:@"stat"]) {
+            //moved (or not, nevermind) uploaded photo to specified group
+        } else {
+            
+            //error
+//            if ([response[@"code"] integerValue] == [USER_REMOVED_ACCESS_CODE integerValue]) {
+//                [self shouldReloginWithPendingAction:SHKPendingShare];
+//            } else {
+//                [self sendShowSimpleErrorAlert];
+//            }
+            SHKLog(@"flickr got error%@", [response description]);
+        }
 	}
 	
 	else
 	{
-		// Handle the error. You can scan the string created from NSData for some result code, or you can use SHKXMLResponseParser. For inspiration look at how existing sharers do this.
-		
-		// If the error was the result of the user no longer being authenticated, you can reprompt
-		// for the login information with:
-		[self shouldReloginWithPendingAction:SHKPendingSend];
-		
-		// Otherwise, all other errors should end with:
 		[self sendShowSimpleErrorAlert];
+        NSError *error __attribute__((unused)) = nil;
+        SHKLog(@"Flickr ticket did not succeed with error:%@",  [[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error] description]);
+        
 	}
 }
 - (void)sendTicket:(OAServiceTicket *)ticket didFailWithError:(NSError*)error
 {
-	[self sendShowSimpleErrorAlert];
+	if (self.curOptionController) {
+        [self.curOptionController optionsEnumerationFailedWithError:error];
+    } else {
+        [self sendShowSimpleErrorAlert];
+    }
 }
 
 @end
